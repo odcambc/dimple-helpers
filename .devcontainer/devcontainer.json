@@ -1,0 +1,41 @@
+{
+  "name": "dimple_helpers",
+
+  // Alternate config for agent use: .devcontainer/claude-sandbox/
+
+  // `devcontainer build --platform linux/amd64` does NOT change what `up` pulls:
+  // both commands read this file. With only `rocker/shiny:4.5.3`, the CLI runs
+  // `docker pull` for the host CPU (arm64) and fails. Pin the linux/amd64
+  // manifest by digest so pull/inspect/up/build agree. Re-pin when bumping the tag.
+  "image": "rocker/shiny@sha256:0b7b6726e32e99b1daef48dc7bdce6963a53e419380762fd0070789f3fc1572e",
+  "runArgs": ["--platform=linux/amd64"],
+
+  // Git is in rocker/shiny; omitting the devcontainers/git feature avoids extra
+  // feature stages that complicate multi-arch.
+
+  "forwardPorts": [3838],
+  "portsAttributes": {
+    "3838": {
+      "label": "Shiny app",
+      "onAutoForward": "openBrowser"
+    }
+  },
+
+  "postCreateCommand": "R -e \"renv::restore(prompt = FALSE)\"",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "REditorSupport.r",
+        "RDebugger.r-debugger"
+      ],
+      "settings": {
+        "r.rterm.linux": "/usr/bin/R",
+        "r.bracketedPaste": true
+      }
+    }
+  },
+
+  // rocker/shiny (this tag) defines user `shiny`, not `rstudio`.
+  "remoteUser": "shiny"
+}
