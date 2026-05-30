@@ -1,0 +1,21 @@
+# Multi-app router for the Hetzner CPX21 host.
+# Adding a new app:
+#   1. Add an A (and ideally AAAA) record for <subdomain>.odcambc.com → VPS IP.
+#   2. Add a new {host} block below pointing at the app's container:port.
+#   3. Add the app as a service in docker-compose.yml on the `web` network.
+#   4. `docker compose up -d` and `docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile`.
+
+{
+	email cbmacdo@gmail.com
+}
+
+dimple-helper.odcambc.com {
+	# Caddy's reverse_proxy handles WebSocket upgrades automatically, which Shiny
+	# relies on for every session. Don't add `header_up` lines that strip
+	# Connection or Upgrade — Shiny will hang on connect if you do.
+	reverse_proxy dimple-helpers:3838
+
+	# Default access log to stdout (captured by `docker compose logs caddy`).
+	# Structured logging / per-app log files can come later if needed.
+	log
+}

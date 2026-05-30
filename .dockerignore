@@ -1,0 +1,38 @@
+# Mostly mirrors rsconnect/.../dimple_helpers.dcf's ignoredFiles, with one
+# deliberate difference: .Rprofile stays IN. shinyapps.io activates renv on its
+# own; Docker needs the project .Rprofile to source renv/activate.R.
+
+.git
+.gitignore
+.dockerignore
+Dockerfile
+
+# Devcontainer + IDE noise
+.devcontainer/
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# HMM workstream (intentionally excluded, like the dcf does)
+HMM_parser.Rmd
+HMM_parser.nb.html
+parse_hmm_profile.R
+
+# Existing deploy artifacts — not relevant to the Docker image
+rsconnect/
+startApp.R
+install.R
+
+# Infra config is mounted into the Caddy container at runtime, not baked into
+# the dimple-helpers image.
+infra/
+
+# renv state we DON'T want in the image: library and staging are rebuilt by
+# renv::restore() inside the container. Keep activate.R and settings.json
+# (referenced explicitly in the Dockerfile).
+renv/library/
+renv/staging/
+renv/local/
+renv/cellar/
+renv/.cache/

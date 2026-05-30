@@ -1,0 +1,40 @@
+# Tier 1 deploy:
+#   On the VPS: `cd <repo>/infra && docker compose up -d --build`
+#   That builds dimple-helpers from ../Dockerfile and brings up Caddy in front.
+# Adding an app: copy the dimple-helpers service block, change name + build
+#   context + expose port, add a matching block to Caddyfile.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      # Caddy serves the ACME HTTP-01 challenge over 80, then redirects to 443.
+      # IPv6 binds are implicit (Docker exposes on all interfaces by default).
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data         # Let's Encrypt certs + ACME state. MUST persist.
+      - caddy_config:/config     # Caddy's autosaved config. Persist to avoid re-init.
+    networks:
+      - web
+
+  dimple-helpers:
+    build:
+      context: ..                # Dockerfile lives at repo root; compose is in infra/.
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "3838"                   # Internal-only; Caddy reaches us by service name.
+    networks:
+      - web
+
+networks:
+  web:
+    # All app containers and Caddy share this network. Docker's embedded DNS
+    # makes each service reachable by its service name (e.g. dimple-helpers:3838).
+
+volumes:
+  caddy_data:
+  caddy_config:
